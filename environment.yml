@@ -1,0 +1,9 @@
+name: EULP
+dependencies:
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - joblib
+  - pip:
+    - sklearn
