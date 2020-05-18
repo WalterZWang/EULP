@@ -141,7 +141,7 @@ def print_hour_interval_bin_info(hour_interval_bins):
     '''
     Print out the hourly bin Hz info
     '''
-    print('= '*20)
+    print('= '*30)
     for i, hour_interval in enumerate(hour_interval_bins, 1):
-        print(f"Bin {i}: {round(1/(hour_interval[1]*3600), 5)} Hz to {round(1/(hour_interval[0]*3600), 5)} Hz")
-    print('= '*20)
+        print(f"Bin {i}: {hour_interval[0]} Hz to {hour_interval[1]} Hour --- {round(1/(hour_interval[1]*3600), 5)} Hz to {round(1/(hour_interval[0]*3600), 5)} Hz")
+    print('= '*30)
