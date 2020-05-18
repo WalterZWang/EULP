@@ -8,8 +8,11 @@ import datetime
 from sklearn.preprocessing import MinMaxScaler
 from sklearn import preprocessing
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.cluster import KMeans
-from yellowbrick.cluster import KElbowVisualizer
+# from yellowbrick.cluster import KElbowVisualizer
+
+import matplotlib.gridspec as gridspec
 
 
 def get_fft_values(y_values, T, N, f_s, window=1):
@@ -64,3 +67,81 @@ def get_fft_sum_by_bins(f_values, fft_values, hour_interval_bins):
         sum_hz_bins.append(temp_sum)
     df_sum_bins = pd.DataFrame([sum_hz_bins], columns = col_names)
     return df_sum_bins
+
+
+def plot_ts_all(df_ts, ls_fft, save_path=None, save_dir=None, str_title=None):
+    '''
+    Plots both time-series and ferquency spectrum
+    '''
+    # plot setting
+    fig = plt.figure(constrained_layout=True)
+    fig.suptitle(f"Time-series and frequency-domian plots: {str_title}", fontsize=12, y=1.05)
+    gs = gridspec.GridSpec(2, 1, figure=fig, width_ratios=[12], height_ratios=[6, 6]) 
+    gs.update(wspace=0.025, hspace=0.05) # set the spacing between axes. 
+    
+    # Time series plot
+    ax = fig.add_subplot(gs[0, 0]) # Entire first row
+    ax.plot(df_ts.index, df_ts['Value'])
+    ax.set_title('Scaled Time-series Consumption')
+    ax.set_xlabel('Datetime')
+    ax.set_ylabel('Normalized Consumption')
+    ax.set_ylim(0, 1)
+
+    # Frequency-domian plot
+    f_values, fft_values = ls_fft
+    ax1 = fig.add_subplot(gs[1, 0]) # Entire first row
+    ax1.scatter(f_values, fft_values, linestyle='-', color='blue', label='')
+    ax1.set_title('Frequency-Amplitude')
+    ax1.set_xlabel('Frequency (Hz)')
+    ax1.set_ylabel('Amplitude')
+    ax1.set_xlim(0, 0.0006)
+    ax1.set_ylim(0, 0.15)
+
+    if save_dir != None:
+        plt.savefig(str(f"{os.path.join(save_dir, str_title)}.png"), dpi=80)
+        plt.close()
+        
+    if save_path != None:
+        plt.savefig(save_path, dpi=80)    
+        plt.close()
+
+def get_daily_fft_sum_bins(df_ts, hour_interval_bins):
+    '''
+    Calculate daily spectrum amplitude sum at daily window
+    :return: a pandas dataframe with hour bins as columns and spectrum amplitude sums in each bin at each day.
+    '''
+    for i, single_date in enumerate(np.unique(df_ts.date)):
+        df_ts_day = df_ts.loc[df_ts.date == single_date]
+        f_values, fft_values = get_load_fft(df_ts_day)
+        if i == 0:
+            df = get_fft_sum_by_bins(f_values, fft_values, hour_interval_bins)
+        else:
+            df = df.append(get_fft_sum_by_bins(f_values, fft_values, hour_interval_bins))
+    df.index = np.unique(df_ts.date)
+    return df
+
+def daily_fft_sum_bins_boxplot(df_fft_bins, title_key=None, save_path=None):
+    '''
+    Generate boxplot for the spectrum amplitude sum bins
+    '''
+    plt.figure(figsize=(14,7))
+    plt.title(f"Boxplot of Frequency Spectrum Amplitude Sums: {title_key}")
+    sns.boxplot(data=pd.melt(df_fft_bins),
+                x='variable', 
+                y='value')
+    plt.ylim([0, 0.3])
+    plt.xlabel('Cycle Range (hour)')
+    plt.ylabel('Sum of Normalized Spectrum Amplitude')
+    if save_path != None:
+        plt.savefig(save_path, dpi=200)
+        plt.show()
+
+    
+def print_hour_interval_bin_info(hour_interval_bins):
+    '''
+    Print out the hourly bin Hz info
+    '''
+    print('= '*20)
+    for i, hour_interval in enumerate(hour_interval_bins, 1):
+        print(f"Bin {i}: {round(1/(hour_interval[1]*3600), 5)} Hz to {round(1/(hour_interval[0]*3600), 5)} Hz")
+    print('= '*20)
