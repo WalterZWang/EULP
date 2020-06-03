@@ -15,7 +15,7 @@ using ``conda env create -f environment.yml`` to prepare the environment
 
 ``frequence_domain_analysis.py`` python script to be called to do the frequence domain analysis
 
-``utils.py`` utility functions used in ``time_domain_analysis.py`` and ``frequence_domain_analysis``
+``lib`` contains utility functions used in ``time_domain_analysis.py`` and ``frequence_domain_analysis``
 
 ``result`` contains the analysis results
 
@@ -32,5 +32,5 @@ using ``conda env create -f environment.yml`` to prepare the environment
 ## Steps for analysis
 
 1. Set up the virtual environment, installing the libraries specified in the ``environment.yml``
-2. Run ``time_domain_analysis.py`` and ``frequence_domain_analysis.py``
+2. Run ``time_domain_analysis.py`` and ``frequence_domain_analysis.py``, see how the functions are used in ``*_example.ipynb``
 3. Share with us the results in ``result`` folder

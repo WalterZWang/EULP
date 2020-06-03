@@ -88,7 +88,7 @@ class find_optimal_cluster_number():
         silhouette_avg = metrics.silhouette_score(self.data, label)
         return cluster_center, label, DBI, silhouette_avg
 
-    def select_n(self,ncluster_min, ncluster_max):
+    def select_n(self, ncluster_min, ncluster_max):
         start_time = time.time()
         self.results = Parallel(n_jobs=self.n_cores)(delayed(self.cluster)(n_cluster) for n_cluster in range(ncluster_min, ncluster_max))
 
