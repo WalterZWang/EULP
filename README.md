@@ -8,7 +8,8 @@ This repo stores the script to analyze EULP from NREL's dataset
 2. columns: "Datetime" and "value"
 3. rows: 1 or 2 years data, at 15 min interval
 
-``environment.yml`` dependece of the environment (Python 3.8)
+``environment.yml`` dependece of the environment (Python 3.8),
+using ``conda env create -f environment.yml`` to prepare the environment
 
 ``time_domain_analysis.py`` python script to be called to do the time domain analysis
 
