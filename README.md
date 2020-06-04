@@ -54,13 +54,13 @@ This repository hosts LBNL's EULP Python package source code, and a domonstratio
 
 
 ``example`` contains:
-1. example building [electric load profile](../example/data/sample_1.csv)
+1. example building [electric load profile](example/data/sample.csv)
     * each csv file is a whole year smart meter data for a building
     * columns: "Datetime" and "Value"
     * rows: 1 or 2 years data, at 15 min interval
 2. example jupyter notebooks
-    * [``example_time_domain_workflow.ipynb``](../example/example_time_domain_workflow.ipynb) demonstrates the capability of time domain analysis of this package
-    * [``example_frequency_domain_workflow.ipynb``](../example/example_frequency_domain_workflow.ipynb) demonstrates the capability of frequency domain analysis of this package
+    * [``example_time_domain_workflow.ipynb``](example/example_time_domain_workflow.ipynb) demonstrates the capability of time domain analysis of this package
+    * [``example_frequency_domain_workflow.ipynb``](example/example_frequency_domain_workflow.ipynb) demonstrates the capability of frequency domain analysis of this package
     * ``time_domain_analysis.py`` demonstrates xyz
 
 ``result`` contains the analysis results. For the ease of sharing, please organize the results in sub-directory, for instance:
@@ -78,8 +78,6 @@ We recommend installing the package in a virtual environment. Instructions about
 + With [venv](https://docs.python.org/3/library/venv.html)
 
 Once the virtual envrionment is installed, change directory to the root path of this repository, then run ```pip install .``` FUTURE: run ```pip install EULP```
-
-3. Share with us the results in ``result`` folder
 
 
 ## Use
