@@ -65,8 +65,6 @@ This repository hosts LBNL's EULP Python package source code, and a domonstratio
 
 ``result`` contains the analysis results. For the ease of sharing, please organize the results in sub-directory, for instance:
 + ``LBNL_Case_1``
-    * ``fig`` stores the visuals generated in the case study
-    * ``other`` stores the other output (e.g., CSVs, DBs)
 + ``NREL_Case_Name``
 
 ``tests`` contains test scripts (TBD)
