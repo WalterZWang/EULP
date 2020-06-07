@@ -1,7 +1,13 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
 from scipy.fftpack import fft
+from sklearn import preprocessing
+from sklearn.cluster import KMeans
+from yellowbrick.cluster import KElbowVisualizer
+from yellowbrick.cluster import silhouette_visualizer
+
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 class LoadProfileMetrics:
     DEFAULT_INTERVAL_M = 15 # Default time-interval in minutes
@@ -32,7 +38,7 @@ class LoadProfileMetrics:
         '''
         df = self.df_ts.copy(deep=True)
         arr_values = df[colname].values.reshape((len(df.index), 1))
-        scaler = MinMaxScaler(feature_range=(scale_min, scale_max))
+        scaler = preprocessing.MinMaxScaler(feature_range=(scale_min, scale_max))
         scaler = scaler.fit(arr_values)
         arr_scaled = scaler.transform(arr_values)
         df[colname] = arr_scaled
@@ -40,17 +46,25 @@ class LoadProfileMetrics:
         
 
     @staticmethod
-    def get_fft_w_window(df_ts, window='D', year=DEFAUL_YEAR, get_bins=False, bins=DEFAULT_BINS):
+    def get_fft_w_window(df_ts, window='D', year=DEFAUL_YEAR, get_bins=False, day_type='weekday', bins=DEFAULT_BINS):
         '''
         Calculate the fft for the building with specified window size
         :window: the window 
         :return: a pandas dataframe with fft bins grouped by specified window
         '''
-        df_ts['date'] = pd.to_datetime(df_ts['Datetime']).dt.date
+        df_ts['Datetime'] = pd.to_datetime(df_ts['Datetime'])
+        df_ts['date'] = df_ts['Datetime'].dt.date
+
+        if day_type == 'weekday':
+            df_ts = df_ts.loc[df_ts['Datetime'].dt.dayofweek < 5]
+        elif day_type == 'weekend':
+            df_ts = df_ts.loc[df_ts['Datetime'].dt.dayofweek >= 5]
+
         if year != 'All':
-            df_ts = df_ts.loc[pd.to_datetime(df_ts['Datetime']).dt.year == year]
+            df_ts = df_ts.loc[df_ts['Datetime'].dt.year == year]
         if get_bins:
             # Group fft features into bins
+            v_valid_dates = []
             for i, str_date in enumerate(np.unique(df_ts['date'])):
                 df_window = df_ts[df_ts['date'] == (str_date)]
                 f_values, fft_values = LoadProfileMetrics.get_load_fft(df_window)
@@ -59,8 +73,10 @@ class LoadProfileMetrics:
                         df_fft = LoadProfileMetrics.get_fft_sum_by_bins(f_values, fft_values)
                     else:
                         df_fft = df_fft.append(LoadProfileMetrics.get_fft_sum_by_bins(f_values, fft_values))
+                    v_valid_dates.append(str_date)
                 except:
                     pass
+            df_fft.insert(0, column='Date', value=v_valid_dates)
         else:
             # Get every fft feature
             values = []
@@ -135,3 +151,45 @@ class LoadProfileMetrics:
             sum_hz_bins.append(temp_sum)
         df_sum_bins = pd.DataFrame([sum_hz_bins], columns = col_names)
         return df_sum_bins
+
+    @staticmethod
+    def daily_fft_sum_bins_boxplot(df_fft_bins, title_key=None, save_path=None):
+        '''
+        Generate boxplot for the spectrum amplitude sum bins
+        '''
+        plt.figure(figsize=(14,7))
+        plt.title(f"Boxplot of Frequency Spectrum Amplitude Sums: {title_key}")
+        sns.boxplot(data=pd.melt(df_fft_bins),
+                    x='variable', 
+                    y='value')
+        plt.ylim([0, 0.85])
+        plt.xlabel('Cycle Range (hour)')
+        plt.ylabel('Sum of Normalized Spectrum Amplitude')
+        if save_path != None:
+            plt.savefig(save_path, dpi=200)
+            plt.show()
+            
+    @staticmethod
+    def prepare_kmeans_data(df_features, standardize_features=True):
+        scaler = preprocessing.StandardScaler()
+        if standardize_features:
+            out = scaler.fit_transform(df_features)
+        else:
+            out = df_features.to_numpy()
+        return out
+    
+    
+    @staticmethod
+    def kmeans_elbow_plot(cluster_data, k_max=25):
+        model = KMeans()
+        visualizer = KElbowVisualizer(model, k=(2,k_max))
+        visualizer.fit(cluster_data) # Fit the data to the visualizer
+        visualizer.show()        # Finalize and render the figure
+        
+
+    @staticmethod
+    def kmeans_silhouette_plot(cluster_data, k):
+        # Use the quick method and immediately show the figure
+        silhouette_visualizer(KMeans(k, random_state=42), cluster_data, colors='yellowbrick')
+
+        
