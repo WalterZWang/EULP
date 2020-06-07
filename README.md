@@ -21,13 +21,10 @@ This repository hosts LBNL's EULP Python package source code, and a domonstratio
 │   │   ├──sample_1.csv
 │   │   └──sample_2.csv
 │   ├── example_frequency_domain_workflow.ipynb
-│   ├── example_time_domain_workflow.ipynb
-│   └── time_domain_analysis.py
+│   └── example_time_domain_workflow.ipynb
 │
 ├── results
 │   ├── LBNL_Case_1
-│   │   ├── fig
-│   │   └── other
 │   └── NREL_Case_1
 │
 └── tests
@@ -48,7 +45,7 @@ This repository hosts LBNL's EULP Python package source code, and a domonstratio
 + ``LP_explorations.py`` module contains a class with methods to visualize load profiles
     * ``LoadProfileExplorations.line_plot``: Generates a line plot for a load profile
     * ``LoadProfileExplorations.heatmap``: Generates an annual heat map of a load profile
-    * ``LoadProfileExplorations.time_frequenc_ploty``: Generates a figure with both time-series line plot and frequency-domain spectrums
+    * ``LoadProfileExplorations.time_frequenc_plot``: Generates a figure with both time-series line plot and frequency-domain spectrums
 
 + ``LP_clustering.py`` module contains a class with methods to cluster load profiles (with time- and frequency- features)
 
