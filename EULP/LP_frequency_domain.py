@@ -2,14 +2,11 @@ import pandas as pd
 import numpy as np
 from scipy.fftpack import fft
 from sklearn import preprocessing
-from sklearn.cluster import KMeans
-from yellowbrick.cluster import KElbowVisualizer
-from yellowbrick.cluster import silhouette_visualizer
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-class LoadProfileMetrics:
+class LoadProfileFrequencyDomain:
     DEFAULT_INTERVAL_M = 15 # Default time-interval in minutes
     DEFAUL_YEAR = 2015      # Default year of data to use
     DEFAULT_BINS = [
@@ -67,12 +64,12 @@ class LoadProfileMetrics:
             v_valid_dates = []
             for i, str_date in enumerate(np.unique(df_ts['date'])):
                 df_window = df_ts[df_ts['date'] == (str_date)]
-                f_values, fft_values = LoadProfileMetrics.get_load_fft(df_window)
+                f_values, fft_values = LoadProfileFrequencyDomain.get_load_fft(df_window)
                 try:
                     if i == 0:
-                        df_fft = LoadProfileMetrics.get_fft_sum_by_bins(f_values, fft_values)
+                        df_fft = LoadProfileFrequencyDomain.get_fft_sum_by_bins(f_values, fft_values)
                     else:
-                        df_fft = df_fft.append(LoadProfileMetrics.get_fft_sum_by_bins(f_values, fft_values))
+                        df_fft = df_fft.append(LoadProfileFrequencyDomain.get_fft_sum_by_bins(f_values, fft_values))
                     v_valid_dates.append(str_date)
                 except:
                     pass
@@ -82,7 +79,7 @@ class LoadProfileMetrics:
             values = []
             for i, str_date in enumerate(np.unique(df_ts['date'])):
                 df_window = df_ts[df_ts['date'] == (str_date)]
-                f_values, fft_values = LoadProfileMetrics.get_load_fft(df_window)
+                f_values, fft_values = LoadProfileFrequencyDomain.get_load_fft(df_window)
                 row_values = [str(str_date)] + list(fft_values)
                 try:
                     if len(values) == 0:
@@ -109,7 +106,7 @@ class LoadProfileMetrics:
         T = t_n / N                                        # Timestep (seconds)
         f_s = 1/T                                          # Sample frequency (Hz)
         y_values = df_t['Value'].tolist()
-        f_values, fft_values = LoadProfileMetrics.get_fft_values(y_values, T, N, f_s)
+        f_values, fft_values = LoadProfileFrequencyDomain.get_fft_values(y_values, T, N, f_s)
         return f_values, fft_values
 
     @staticmethod
@@ -168,28 +165,4 @@ class LoadProfileMetrics:
         if save_path != None:
             plt.savefig(save_path, dpi=200)
             plt.show()
-            
-    @staticmethod
-    def prepare_kmeans_data(df_features, standardize_features=True):
-        scaler = preprocessing.StandardScaler()
-        if standardize_features:
-            out = scaler.fit_transform(df_features)
-        else:
-            out = df_features.to_numpy()
-        return out
-    
-    
-    @staticmethod
-    def kmeans_elbow_plot(cluster_data, k_max=25):
-        model = KMeans()
-        visualizer = KElbowVisualizer(model, k=(2,k_max))
-        visualizer.fit(cluster_data) # Fit the data to the visualizer
-        visualizer.show()        # Finalize and render the figure
-        
-
-    @staticmethod
-    def kmeans_silhouette_plot(cluster_data, k):
-        # Use the quick method and immediately show the figure
-        silhouette_visualizer(KMeans(k, random_state=42), cluster_data, colors='yellowbrick')
-
         
