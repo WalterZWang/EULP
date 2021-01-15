@@ -69,6 +69,18 @@ def get_fft_sum_by_bins(f_values, fft_values, hour_interval_bins):
     return df_sum_bins
 
 
+def normalize_df_col(df, colname, scale_min=0, scale_max=1):
+    '''
+    Normalize a column of a dataframe to (scale_min, scale_max)
+    '''
+    arr_values = df[colname].values.reshape((len(df.index), 1))
+    scaler = MinMaxScaler(feature_range=(scale_min, scale_max))
+    scaler = scaler.fit(arr_values)
+    arr_normalized = scaler.transform(arr_values)
+    df[colname] = arr_normalized
+    return df
+
+
 def plot_ts_all(df_ts, ls_fft, save_path=None, save_dir=None, str_title=None):
     '''
     Plots both time-series and ferquency spectrum
