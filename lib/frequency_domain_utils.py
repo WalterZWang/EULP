@@ -105,6 +105,36 @@ def plot_ts_all(df_ts, ls_fft, save_path=None, save_dir=None, str_title=None):
         plt.savefig(save_path, dpi=80)    
         plt.close()
 
+
+def plot_ts_freq(df_ts, ls_fft, figsize=(16, 8), save_path=None, save_dir=None, str_title=None):
+    f, axs = plt.subplots(2, 1, figsize=figsize, constrained_layout=True)
+    f.suptitle(f"Time-series and frequency-domian plots: {str_title}", fontsize=12, y=1.02)
+    # Time series plot
+    axs[0].plot(df_ts.index, df_ts['Value'])
+    axs[0].set_title('Scaled Time-series Consumption')
+    axs[0].set_xlabel('Datetime')
+    axs[0].set_ylabel('Normalized Consumption')
+    # axs[0].set_xlim(0, 1.05)
+    axs[0].set_ylim(0, 1.05)
+
+    # Frequency-domian plot
+    f_values, fft_values = ls_fft
+    axs[1].scatter(f_values, fft_values, linestyle='-', color='blue', label='')
+    axs[1].set_title('Frequency-Amplitude')
+    axs[1].set_xlabel('Frequency (Hz)')
+    axs[1].set_ylabel('Amplitude')
+    axs[1].set_xlim(0.001, 0.0085)
+    axs[1].set_ylim(0, 0.02)
+    
+    if save_dir != None:
+        plt.savefig(str(f"{os.path.join(save_dir, str_title)}.png"), dpi=80)
+        plt.close()
+        
+    if save_path != None:
+        plt.savefig(save_path, dpi=80)    
+        plt.close()
+
+
 def get_daily_fft_sum_bins(df_ts, hour_interval_bins):
     '''
     Calculate daily spectrum amplitude sum at daily window
