@@ -115,8 +115,8 @@ def select_cluster_number(path, cluster_range, result_path):
     i = 0
     for file in files:
         data = pd.read_csv(f"{path}/{file}", index_col="Datetime").values
-        # normalize the data by the anually 99% peak load
-        data = data / np.nanquantile(data, 0.99)
+        # normalize the data by the anually peak load
+        data = data / np.nanquantile(data, 1.00)
         data = data.reshape((-1, 96))
         # clean data: delete the row (day) with na or all 0s
         mask = np.all(np.isnan(data) | np.equal(data, 0), axis=1)
@@ -181,8 +181,8 @@ def time_domain_analysis(path, number_of_clusters,result_path):
     i = 0
     for file in files:
         data = pd.read_csv(f"{path}/{file}", index_col="Datetime").values
-        # normalize the data by the anually 99% peak load
-        data = data / np.nanquantile(data, 0.99)
+        # normalize the data by the anually peak load
+        data = data / np.nanquantile(data, 1.00)
         data = data.reshape((-1, 96))
         # clean data: delete the row (day) with na or all 0s
         mask = np.all(np.isnan(data) | np.equal(data, 0), axis=1)
