@@ -36,10 +36,13 @@ def load_shape_statistic_working_day(load, samRate=4, baseLoadDefRatio=0.2):
     baseLoad_TS = load[load<=(quantile.loc[0.025]+baseLoadDefRatio*(quantile.loc[0.975]-quantile.loc[0.025]))]
     baseLoadTime = baseLoad_TS.index.tolist()
     baseLoad = baseLoad_TS.mean()
-    try:
-        baseLoad_SD = baseLoad_TS.std()/baseLoad_TS.mean()
-    except:
+    if baseLoad == 0:
         baseLoad_SD = 0
+    else:
+        try:
+            baseLoad_SD = baseLoad_TS.std()/baseLoad_TS.mean()
+        except:
+            baseLoad_SD = 0
     highLoad_start = min(highLoadTime)
     highLoad_end = max(highLoadTime)
     highLoadDuration = (highLoad_end-highLoad_start)/samRate
