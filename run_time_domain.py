@@ -38,12 +38,23 @@ idx = ['bldg_type', 'data_type']  # Rows in Excel pivot table
 pivot = cts.pivot_table(values=vals, index=idx, aggfunc=ags)
 print(pivot)
 
-# Step 1: select the optimal number of clusters
-select_cluster_number(path,[2,8], building_type='medium_office')
-# check the figures in 'fig' to determine the optimal number of clusters
+for bldg_type, data_types in pivot.groupby(level=0):
+  for data_type, counts in data_types.groupby(level=1):
+    count = pivot.loc[(bldg_type, data_type)][('sum', 'count')]
+    data_and_bldg_type = f'{data_type}-{bldg_type}'
 
-# step 2: do the clustering with the optimal number of clusters, calculate the key statics and cluster center for each cluster
-number_of_clusters = 2
-time_domain_analysis(path, number_of_clusters, building_type='medium_office')
+    if not data_type == 'model':
+      print(f'- skipping {data_and_bldg_type}')
+      continue
 
-# share the csv files in 'result/' with us
+    print(f'processing {data_and_bldg_type}, count: {count}')
+
+    # Step 1: select the optimal number of clusters
+    # select_cluster_number(path,[2,8], building_type=data_and_bldg_type)
+    # check the figures in 'fig' to determine the optimal number of clusters
+
+    # step 2: do the clustering with the optimal number of clusters, calculate the key statics and cluster center for each cluster
+    number_of_clusters = 2
+    time_domain_analysis(path, number_of_clusters, building_type=data_and_bldg_type)
+
+    # share the csv files in 'result/' with us

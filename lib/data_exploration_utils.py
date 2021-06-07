@@ -1,6 +1,8 @@
 import os
 import shutil
 import datetime
+import glob
+from pathlib import Path
 
 import pandas as pd
 import numpy as np
@@ -12,32 +14,65 @@ from keras import layers
 from keras import applications
 from keras.applications.imagenet_utils import preprocess_input
 
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
 
 
-def get_all_file_paths(dir_lookup, str_file_type):
-    return [os.path.join(dir_lookup, f) for f in os.listdir(dir_lookup) if f.endswith(str_file_type)]
+def get_all_file_paths(dir_lookup, str_file_type, building_type=None):
+    files = []
+    for f in glob.glob(f'{dir_lookup}/*.{str_file_type}'):
+        if building_type:
+            if not building_type in f:
+                continue
 
+        files.append(os.path.abspath(f))
+
+    return files
 
 def clean_pge_df_ts(csv_path, year=None):
-    ''' 
+    '''
     Extract and clean PG&E time-series
     :csv_path: path to the raw PG&E time series CSV
     '''
     # Return the normalized value
-    df_t = pd.read_csv(csv_path, parse_dates=True)
-    if year != None:
-        df_t['Datetime'] = pd.to_datetime(df_t['Datetime'])
-        df_t = df_t[df_t['Datetime'].dt.year == year]
-        if len(df_t.index) == 0: return df_t
-    
-    df_t = df_t.set_index(pd.DatetimeIndex(df_t['Datetime']))
-    df_t = df_t.drop(columns =['Datetime'])
+    bad_data_indicator = [None, True]
+
+    if Path(csv_path).suffix == '.parquet':
+        df_t = pd.read_parquet(csv_path)
+    elif Path(csv_path).suffix == '.csv':
+        df_t = pd.read_csv(csv_path, parse_dates=True)
+    else:
+        print(f'Unexpected extension, skipping {csv_path}')
+        return bad_data_indicator
+
+    # if year != None:
+    #     df_t['Datetime'] = pd.to_datetime(df_t['Datetime'])
+    #     df_t = df_t[df_t['Datetime'].dt.year == year]
+    #     if len(df_t.index) == 0: return df_t
+
+    # Check that original data length is 35,040 and skip if not
+    if not len(df_t) == 35040:
+        print(f'length of data was {len(df_t)}, expected 35,040.  Skipping {file_name}')
+        return bad_data_indicator
+
+    # df_t = df_t.set_index(pd.DatetimeIndex(df_t['Datetime']))
+    # df_t = df_t.drop(columns =['Datetime'])
     df_t = normalize_df_col(df_t, 'Value')
     df_t['date'] = pd.DatetimeIndex(df_t.index).date
-    return df_t
+
+    # Downselect to full days, starting with 1/1 at midnight, ending 12/30.
+    # (AMI data is 1/1-12/31 UTC, so 12/31 MST has 7 missing hours of data)
+    yr = df_t.index[48].year
+    if yr == 2017:
+        df_t = df_t.loc[f'{yr}-1-1':f'{yr}-12-30']
+    # print(f'    after  {df_t.index[0]} to {df_t.index[-1]}')
+
+    if not len(df_t) >= 34944:
+        print(f'length of data was {len(df_t)}, expected >= 34,944.  Skipping {file_name}')
+        return bad_data_indicator
+
+    return [df_t, False]
 
 
 def normalize_df_col(df, colname, scale_min=0, scale_max=1):
@@ -52,13 +87,19 @@ def normalize_df_col(df, colname, scale_min=0, scale_max=1):
     return df
 
 def generate_heatmap(df_ts, save_path=None):
-    ''' 
-    This function takes a pandas datatime series as input, 
+    '''
+    This function takes a pandas datatime series as input,
     and generate a heatmap where the x-axis is the day index and the y-axis is the timestamps of a day.
     '''
     groups = df_ts.groupby(pd.Grouper(freq='D')) # Group by day
+    print(f'groups = {len(groups)}')
     df_plot = pd.DataFrame()
     for i, (name, group) in enumerate(groups):
+        # print(f'{name} has {len(group.values)} values')
+        if not len(group.values) == 96:
+            # print(f'{name} has {len(group.values)} *****')
+            # print(group)
+            continue
         try:
             df_plot[i+1] = group.values
         except:
@@ -71,15 +112,15 @@ def generate_heatmap(df_ts, save_path=None):
     plt.axis('off')
     if save_path != None:
         plt.savefig(save_path, dpi=200)
-        plt.show()
-        plt.close()
+        # plt.show()
+        # plt.close()
 
 
 def generate_ts_html(df_t, str_title, dir_save):
     '''
     This function create a html to visualize time-series data with plotly
     '''
-    fig = px.line(df_t, x=df_t.index, y='Value', range_x=['2015-01-01','2015-12-31'])
+    fig = px.line(df_t, x=df_t.index, y='Value', range_x=['2016-01-01','2017-12-31'])
     fig.update_layout(
         title={
             'text': f"Normalized consumption for {str_title}",
@@ -91,14 +132,14 @@ def generate_ts_html(df_t, str_title, dir_save):
     )
     fig.update_xaxes(rangeslider_visible=True)
     fig.write_html(f"{dir_save}/{str_title}.html")
-    
+
 
 def model_vgg16_conv_base():
     '''
     This function build a pre-trained (on ImageNet) VGG16 model's convolution base
     '''
     # Use VGG16 as conv base
-    conv_base = applications.VGG16(weights='imagenet', 
+    conv_base = applications.VGG16(weights='imagenet',
                                    include_top=False,
                                    input_shape=(224, 224, 3))
     model = models.Sequential()

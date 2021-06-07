@@ -254,6 +254,9 @@ def time_domain_analysis(path, number_of_clusters, building_type=None):
     # clustering
     clustering = find_optimal_cluster_number(data_resample)
     cluster_centers, labels, DBIs, SIs = clustering.select_n(number_of_clusters,number_of_clusters+1)
+    centers = pd.DataFrame(data=cluster_centers[number_of_clusters], index=range(0,number_of_clusters))
+    centers.index.name = 'cluster_id'
+    centers.to_csv(f"{res_dir}/cluster_centers.csv")
 
     cluster_result = pd.DataFrame(labels)
     column_names = {i: f"{i}_clusters" for i in cluster_result.columns}

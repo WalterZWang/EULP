@@ -8,5 +8,8 @@ dependencies:
   - ipykernel
   - pyarrow
   - fastparquet
+  - keras
+  - plotly
+  - opencv-python
   - pip:
     - sklearn
