@@ -32,18 +32,18 @@ def read_ami(file_name):
     return data
 
 def read_comStock():
-    start_time_WD_CS = pd.read_csv("data\comStock\weekday_start_time.tsv", sep='\t')
+    start_time_WD_CS = pd.read_csv("data/comStock/weekday_start_time.tsv", sep='\t')
     start_time_WD_CS.drop(['Option=NA'], axis = 1, inplace = True)
     start_time_WD_CS.set_index('Dependency=building_type', inplace = True)
     
-    duration_WD_CS = pd.read_csv("data\comStock\weekday_duration.tsv", sep='\t')
+    duration_WD_CS = pd.read_csv("data/comStock/weekday_duration.tsv", sep='\t')
     duration_WD_CS.drop(['Option=missing'], axis = 1, inplace = True)
     
-    start_time_NWD_CS = pd.read_csv("data\comStock\weekend_start_time.tsv", sep='\t')
+    start_time_NWD_CS = pd.read_csv("data/comStock/weekend_start_time.tsv", sep='\t')
     start_time_NWD_CS.drop(['Option=NA'], axis = 1, inplace = True)
     start_time_NWD_CS.set_index('Dependency=building_type', inplace = True)
     
-    duration_NWD_CS = pd.read_csv("data\comStock\weekend_duration.tsv", sep='\t')
+    duration_NWD_CS = pd.read_csv("data/comStock/weekend_duration.tsv", sep='\t')
     duration_NWD_CS.drop(['Option=NA'], axis = 1, inplace = True)
     
     buildingType_CS = duration_WD_CS['Dependency=building_type'].unique()

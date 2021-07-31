@@ -95,7 +95,13 @@ if __name__ == "__main__":
 
     mypath = 'data'
     onlyfiles = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+    failed_building_type = []
     for file_name in onlyfiles:
-        print(file_name)
         ami = read_ami(file_name)
-        utilityComparison(ami, save_fig=True)
+        try:
+            utilityComparison(ami, save_fig=True)
+            print(f'Processed {file_name}')
+        except:
+            print(f'Error raised when processing {file_name}')
+            failed_building_type.append(file_name.split('-')[1].split('.')[0])
+    print('Failed Building Type: ', failed_building_type)
