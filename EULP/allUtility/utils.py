@@ -29,6 +29,7 @@ def read_ami(file_name):
                                   'date', 'building_type', 'utility', 'holiday'])
     data.rename(columns={'highLoadDuration': 'High Load Duration'}, inplace=True)
     data['date'] = data.apply(lambda x: x['date'].split(' ')[0], axis=1)
+    data['month'] = data.apply(lambda x: int(x['date'].split('-')[1]), axis=1)
     return data
 
 def read_comStock():

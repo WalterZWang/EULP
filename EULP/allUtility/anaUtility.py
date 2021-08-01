@@ -84,6 +84,8 @@ def utilityComparison(ami, save_fig=False, xmin=0, xmax=12, ymin=0, ymax=20):
         axs[row_n-1, i].set_xlabel('High Load Start')
         axs[row_n-1, i].set_xticks(range(0, 13, 3))
     
+    fig.suptitle(f'{building_type.capitalize()} by Season', fontsize=16)
+
     if save_fig:
         plt.savefig(f'fig/utility/{building_type}.png')
 
