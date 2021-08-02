@@ -40,11 +40,12 @@ def utilityComparison(ami, save_fig=False, xmin=0, xmax=12, ymin=0, ymax=20):
         # column 1 - Working day
         data_plot = utility_data[utility_data['holiday']==False]
         numberOfDays = data_plot.shape[0]
-        f_raw_WD = regress_dist(data_plot, positions, xx)
-        cfset = axs[row_i, 0].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
-        cset = axs[row_i, 0].contour(xx, yy, f_raw_WD, colors='k')
-        axs[row_i, 0].clabel(cset, inline=1, fontsize=10)    
-        axs[row_i, 0].set_ylabel(f'{utility.upper()}\n\nHigh Load \nDuration [h]')
+        if numberOfDays>30:
+            f_raw_WD = regress_dist(data_plot, positions, xx)
+            cfset = axs[row_i, 0].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
+            cset = axs[row_i, 0].contour(xx, yy, f_raw_WD, colors='k')
+            axs[row_i, 0].clabel(cset, inline=1, fontsize=10)    
+            axs[row_i, 0].set_ylabel(f'{utility.upper()}\n\nHigh Load \nDuration [h]')
         if row_i == 0:
             axs[row_i, 0].set_title(f"Working Day\n\nNumber of Days: {numberOfDays}")
         else:
@@ -53,10 +54,11 @@ def utilityComparison(ami, save_fig=False, xmin=0, xmax=12, ymin=0, ymax=20):
         # column 2 - Non-Working day
         data_plot = utility_data[utility_data['holiday']==True]
         numberOfDays = data_plot.shape[0]
-        f_raw_WD = regress_dist(data_plot, positions, xx)
-        cfset = axs[row_i, 1].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
-        cset = axs[row_i, 1].contour(xx, yy, f_raw_WD, colors='k')
-        axs[row_i, 1].clabel(cset, inline=1, fontsize=10)   
+        if numberOfDays > 30:
+            f_raw_WD = regress_dist(data_plot, positions, xx)
+            cfset = axs[row_i, 1].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
+            cset = axs[row_i, 1].contour(xx, yy, f_raw_WD, colors='k')
+            axs[row_i, 1].clabel(cset, inline=1, fontsize=10)   
         if row_i == 0:
             axs[row_i, 1].set_title(f"Non Working Day\n\nNumber of Days: {numberOfDays}")
         else:
@@ -66,19 +68,21 @@ def utilityComparison(ami, save_fig=False, xmin=0, xmax=12, ymin=0, ymax=20):
         samples_WD_ComStock = generate_samples_ComStock(start_time_WD_CS, duration_WD_CS, building_type)
         samples_NWD_ComStock = generate_samples_ComStock(start_time_NWD_CS, duration_NWD_CS, building_type)
         # column 1 - Working day
-        f_raw_WD = regress_dist(samples_WD_ComStock, positions, xx)
-        cfset = axs[row_n-1, 0].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
-        cset = axs[row_n-1, 0].contour(xx, yy, f_raw_WD, colors='k')
-        axs[row_n-1, 0].clabel(cset, inline=1, fontsize=10)    
-        axs[row_n-1, 0].set_ylabel('ComStock\n\nHigh Load \nDuration [h]')
-        axs[row_n-1, 0].set_title("Sampled from distribution")
+        if len(samples_WD_ComStock)>0:
+            f_raw_WD = regress_dist(samples_WD_ComStock, positions, xx)
+            cfset = axs[row_n-1, 0].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
+            cset = axs[row_n-1, 0].contour(xx, yy, f_raw_WD, colors='k')
+            axs[row_n-1, 0].clabel(cset, inline=1, fontsize=10)    
+            axs[row_n-1, 0].set_ylabel('ComStock\n\nHigh Load \nDuration [h]')
+            axs[row_n-1, 0].set_title("Sampled from distribution")
         
         # column 2 - Non-Working day
-        f_raw_WD = regress_dist(samples_NWD_ComStock, positions, xx)
-        cfset = axs[row_n-1, 1].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
-        cset = axs[row_n-1, 1].contour(xx, yy, f_raw_WD, colors='k')
-        axs[row_n-1, 1].clabel(cset, inline=1, fontsize=10)   
-        axs[row_n-1, 1].set_title("Sampled from distribution")    
+        if len(samples_NWD_ComStock)>0:
+            f_raw_WD = regress_dist(samples_NWD_ComStock, positions, xx)
+            cfset = axs[row_n-1, 1].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
+            cset = axs[row_n-1, 1].contour(xx, yy, f_raw_WD, colors='k')
+            axs[row_n-1, 1].clabel(cset, inline=1, fontsize=10)   
+            axs[row_n-1, 1].set_title("Sampled from distribution")  
             
     for i in range(2):
         axs[row_n-1, i].set_xlabel('High Load Start')
@@ -108,4 +112,7 @@ if __name__ == "__main__":
         except:
             print(f'Error raised when processing {file_name}')
             failed_building_type.append(file_name.split('-')[1].split('.')[0])
+
     print('Failed Building Type: ', failed_building_type)
+    with open('errorUtility.txt', 'w') as f:
+        f.write(f'Failed Building Type: {failed_building_type}')

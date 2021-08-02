@@ -51,7 +51,7 @@ def seasonComparison(ami, weather, save_fig=False, xmin=0, xmax=12, ymin=0, ymax
         for row_i, criterion in enumerate(['season_time', 'season_temp']):
             data_plot = data_WD[data_WD[criterion] == season]
             numberOfDays = data_plot.shape[0]
-            if numberOfDays>10:
+            if numberOfDays>30:
                 f_raw_WD = regress_dist(data_plot, positions, xx)
                 cfset = axs[row_i, col_i].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
                 cset = axs[row_i, col_i].contour(xx, yy, f_raw_WD, colors='k')
@@ -71,7 +71,7 @@ def seasonComparison(ami, weather, save_fig=False, xmin=0, xmax=12, ymin=0, ymax
         for row_i, criterion in enumerate(['season_time', 'season_temp']):
             data_plot = data_NWD[data_NWD[criterion] == season]
             numberOfDays = data_plot.shape[0]
-            if numberOfDays>10:
+            if numberOfDays>30:
                 f_raw_WD = regress_dist(data_plot, positions, xx)
                 cfset = axs[row_i+2, col_i].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
                 cset = axs[row_i+2, col_i].contour(xx, yy, f_raw_WD, colors='k')
@@ -85,18 +85,20 @@ def seasonComparison(ami, weather, save_fig=False, xmin=0, xmax=12, ymin=0, ymax
         samples_WD_ComStock = generate_samples_ComStock(start_time_WD_CS, duration_WD_CS, building_type)
         samples_NWD_ComStock = generate_samples_ComStock(start_time_NWD_CS, duration_NWD_CS, building_type)
         # column 1 - Working day
-        f_raw_WD = regress_dist(samples_WD_ComStock, positions, xx)
-        cfset = axs[0, col_n-1].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
-        cset = axs[0, col_n-1].contour(xx, yy, f_raw_WD, colors='k')
-        axs[0, col_n-1].clabel(cset, inline=1, fontsize=10)    
-        axs[0, col_n-1].set_title("ComStock\n\nSampled from distribution")
+        if len(samples_WD_ComStock)>0:
+            f_raw_WD = regress_dist(samples_WD_ComStock, positions, xx)
+            cfset = axs[0, col_n-1].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
+            cset = axs[0, col_n-1].contour(xx, yy, f_raw_WD, colors='k')
+            axs[0, col_n-1].clabel(cset, inline=1, fontsize=10)    
+            axs[0, col_n-1].set_title("ComStock\n\nSampled from distribution")
         
         # column 2 - Non-Working day
-        f_raw_WD = regress_dist(samples_NWD_ComStock, positions, xx)
-        cfset = axs[2, col_n-1].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
-        cset = axs[2, col_n-1].contour(xx, yy, f_raw_WD, colors='k')
-        axs[2, col_n-1].clabel(cset, inline=1, fontsize=10)   
-        axs[2, col_n-1].set_title("Sampled from distribution")    
+        if len(samples_NWD_ComStock)>0:
+            f_raw_WD = regress_dist(samples_NWD_ComStock, positions, xx)
+            cfset = axs[2, col_n-1].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
+            cset = axs[2, col_n-1].contour(xx, yy, f_raw_WD, colors='k')
+            axs[2, col_n-1].clabel(cset, inline=1, fontsize=10)   
+            axs[2, col_n-1].set_title("Sampled from distribution")    
         
     for col_i in range(col_n):
         axs[3, col_i].set_xlabel('High Load Start')
@@ -107,7 +109,7 @@ def seasonComparison(ami, weather, save_fig=False, xmin=0, xmax=12, ymin=0, ymax
     axs[3, 0].set_ylabel('Non-Working Days\n\nby Temperature\n\nHigh Load \nDuration [h]')
 
     fig.suptitle(f'{building_type.capitalize()} by Season', fontsize=16)
-    
+
     if save_fig:
         plt.savefig(f'fig/season/{building_type}.png')
     
@@ -135,4 +137,7 @@ if __name__ == "__main__":
         except:
             print(f'Error raised when processing {file_name}')
             failed_building_type.append(file_name.split('-')[1].split('.')[0])
+
     print('Failed Building Type: ', failed_building_type)
+    with open('errorSeason.txt', 'w') as f:
+        f.write(f'Failed Building Type: {failed_building_type}')
