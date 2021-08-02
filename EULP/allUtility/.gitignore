@@ -14,7 +14,6 @@ local_files
 
 *.csv
 *.pptx
-*.ipynb
 
 data
 fig
