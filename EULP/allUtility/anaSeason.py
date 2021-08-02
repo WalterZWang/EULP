@@ -22,7 +22,7 @@ def seasonComparison(ami, weather, save_fig=False, xmin=0, xmax=12, ymin=0, ymax
     # Merge data and weather file, get the column season_temp
     data = pd.merge(ami, weather,  how='inner', 
                     left_on=['date','utility'], right_on = ['date','utility'])
-    
+    data = data.dropna()
     # Get the column season_time
     season_time = {'Shoulder': [3, 4, 5, 9, 10, 11], 'Summer': [6, 7, 8], 'Winter': [12, 1, 2]}
     season_series = data['month']
@@ -51,7 +51,7 @@ def seasonComparison(ami, weather, save_fig=False, xmin=0, xmax=12, ymin=0, ymax
         for row_i, criterion in enumerate(['season_time', 'season_temp']):
             data_plot = data_WD[data_WD[criterion] == season]
             numberOfDays = data_plot.shape[0]
-            try:
+            if numberOfDays>10:
                 f_raw_WD = regress_dist(data_plot, positions, xx)
                 cfset = axs[row_i, col_i].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
                 cset = axs[row_i, col_i].contour(xx, yy, f_raw_WD, colors='k')
@@ -60,7 +60,7 @@ def seasonComparison(ami, weather, save_fig=False, xmin=0, xmax=12, ymin=0, ymax
                     axs[row_i, col_i].set_title(f"{season}\n\nNumber of Days: {numberOfDays}")
                 else:
                     axs[row_i, col_i].set_title(f"Number of Days: {numberOfDays}")
-            except:
+            else:
                 if row_i == 0:
                     axs[row_i, col_i].set_title(f"{season}\n\nNumber of Days: {numberOfDays}")
                 else:
@@ -71,13 +71,13 @@ def seasonComparison(ami, weather, save_fig=False, xmin=0, xmax=12, ymin=0, ymax
         for row_i, criterion in enumerate(['season_time', 'season_temp']):
             data_plot = data_NWD[data_NWD[criterion] == season]
             numberOfDays = data_plot.shape[0]
-            try:
+            if numberOfDays>10:
                 f_raw_WD = regress_dist(data_plot, positions, xx)
                 cfset = axs[row_i+2, col_i].contourf(xx, yy, f_raw_WD, cmap='coolwarm')
                 cset = axs[row_i+2, col_i].contour(xx, yy, f_raw_WD, colors='k')
                 axs[row_i+2, col_i].clabel(cset, inline=1, fontsize=10)
                 axs[row_i+2, col_i].set_title(f"Number of Days: {numberOfDays}")   
-            except:
+            else:
                 axs[row_i+2, col_i].set_title(f"Number of Days: {numberOfDays}")   
                 
     # Plot comStock data
@@ -107,8 +107,11 @@ def seasonComparison(ami, weather, save_fig=False, xmin=0, xmax=12, ymin=0, ymax
     axs[3, 0].set_ylabel('Non-Working Days\n\nby Temperature\n\nHigh Load \nDuration [h]')
 
     fig.suptitle(f'{building_type.capitalize()} by Season', fontsize=16)
-
-    plt.savefig(f'fig/season/{building_type}.png')
+    
+    if save_fig:
+        plt.savefig(f'fig/season/{building_type}.png')
+    
+    plt.close(fig)
 
 if __name__ == "__main__":
     from os import listdir
