@@ -37,11 +37,11 @@ def get_load_fft(df_t, sample_timestep=15):
     :param sample_timestep: minutes per timestep
     :return: frequency and amplitude values arrays
     '''
-    t_n = len(df_t['Value']) * sample_timestep * 60    # Total duration of sample (seconds)
-    N = len(df_t['Value'])                             # Total number of sample points
+    t_n = len(df_t['total_kWh_excluding_blanks']) * sample_timestep * 60    # Total duration of sample (seconds)
+    N = len(df_t['total_kWh_excluding_blanks'])                             # Total number of sample points
     T = t_n / N                                        # Timestep (seconds)
     f_s = 1/T                                          # Sample frequency (Hz)
-    y_values = df_t['Value'].tolist()
+    y_values = df_t['total_kWh_excluding_blanks'].tolist()
     f_values, fft_values = get_fft_values(y_values, T, N, f_s)
     return f_values, fft_values
 
@@ -81,7 +81,7 @@ def plot_ts_all(df_ts, ls_fft, save_path=None, save_dir=None, str_title=None):
     
     # Time series plot
     ax = fig.add_subplot(gs[0, 0]) # Entire first row
-    ax.plot(df_ts.index, df_ts['Value'])
+    ax.plot(df_ts.index, df_ts['total_kWh_excluding_blanks'])
     ax.set_title('Scaled Time-series Consumption')
     ax.set_xlabel('Datetime')
     ax.set_ylabel('Normalized Consumption')
