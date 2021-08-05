@@ -37,7 +37,6 @@ def clean_pge_df_ts(csv_path, year=None):
     '''
     # Return the normalized value
     bad_data_indicator = [None, True]
-
     if Path(csv_path).suffix == '.parquet':
         df_t = pd.read_parquet(csv_path)
     elif Path(csv_path).suffix == '.csv':
@@ -52,24 +51,25 @@ def clean_pge_df_ts(csv_path, year=None):
     #     if len(df_t.index) == 0: return df_t
 
     # Check that original data length is 35,040 and skip if not
-    if not len(df_t) == 35040:
-        print(f'length of data was {len(df_t)}, expected 35,040.  Skipping {file_name}')
+    if not len(df_t) >= 0.75*35040:
+        print(f'length of data was {len(df_t)}, expected at least {0.75*35040}.  Skipping {csv_path}')
         return bad_data_indicator
 
     # df_t = df_t.set_index(pd.DatetimeIndex(df_t['Datetime']))
     # df_t = df_t.drop(columns =['Datetime'])
-    df_t = normalize_df_col(df_t, 'Value')
+    df_t = df_t.fillna(0.0)
+    df_t = normalize_df_col(df_t, 'total_kWh_excluding_blanks')
     df_t['date'] = pd.DatetimeIndex(df_t.index).date
 
     # Downselect to full days, starting with 1/1 at midnight, ending 12/30.
     # (AMI data is 1/1-12/31 UTC, so 12/31 MST has 7 missing hours of data)
-    yr = df_t.index[48].year
+    yr = df_t.index[3000].year
     if yr == 2017:
         df_t = df_t.loc[f'{yr}-1-1':f'{yr}-12-30']
     # print(f'    after  {df_t.index[0]} to {df_t.index[-1]}')
 
     if not len(df_t) >= 34944:
-        print(f'length of data was {len(df_t)}, expected >= 34,944.  Skipping {file_name}')
+        print(f'length of data was {len(df_t)}, expected >= 34,944.  Skipping {csv_path}')
         return bad_data_indicator
 
     return [df_t, False]
@@ -120,7 +120,7 @@ def generate_ts_html(df_t, str_title, dir_save):
     '''
     This function create a html to visualize time-series data with plotly
     '''
-    fig = px.line(df_t, x=df_t.index, y='Value', range_x=['2016-01-01','2017-12-31'])
+    fig = px.line(df_t, x=df_t.index, y='total_kWh_excluding_blanks', range_x=['2016-01-01','2017-12-31'])
     fig.update_layout(
         title={
             'text': f"Normalized consumption for {str_title}",
@@ -128,7 +128,7 @@ def generate_ts_html(df_t, str_title, dir_save):
             'xanchor': 'center',
             'yanchor': 'top'},
         xaxis_title="Datetime",
-        yaxis_title="Value",
+        yaxis_title="total_kWh_excluding_blanks",
     )
     fig.update_xaxes(rangeslider_visible=True)
     fig.write_html(f"{dir_save}/{str_title}.html")
