@@ -14,7 +14,9 @@ from sklearn import metrics
 from sklearn.metrics.pairwise import pairwise_distances_argmin
 from sklearn.utils import shuffle
 
-def load_shape_statistic_working_day(load, samRate=4, baseLoadDefRatio=0.2):
+from pyksc.ksc import ksc
+
+def load_shape_statistic_working_day(load, samRate=None, baseLoadDefRatio=0.2):
     '''
     Input
     -------------------------
@@ -56,7 +58,7 @@ def load_shape_statistic_working_day(load, samRate=4, baseLoadDefRatio=0.2):
             highLoadDuration,riseTime,fallTime]
 
 class find_optimal_cluster_number():
-    """
+    """`1   
     try k-means using different number of clusters
 
     Input
@@ -82,7 +84,7 @@ class find_optimal_cluster_number():
         self.DBIs = {}
         self.SIs = {}
 
-    def cluster(self, n_cluster):
+    def cluster_kmeans(self, n_cluster):
         k_means = KMeans(init='k-means++', n_clusters=n_cluster, n_init=100)
         k_means.fit(self.data)
         cluster_center = np.sort(k_means.cluster_centers_, axis=0)
@@ -91,15 +93,40 @@ class find_optimal_cluster_number():
         silhouette_avg = metrics.silhouette_score(self.data, label)
         return cluster_center, label, DBI, silhouette_avg
 
-    def select_n(self, ncluster_min, ncluster_max):
+    def cluster_kspectral(self, n_cluster):
+        dat = np.ascontiguousarray(self.data.values).astype('double')
+        cluster_center, label, best_shift, best_dist = ksc(dat, n_cluster, n_iters=-1, n_runs = 100)
+        cluster_center = np.sort(cluster_center, axis=0)
+        # label = pairwise_distances_argmin(self.data,cluster_center)
+        DBI = metrics.davies_bouldin_score(self.data, label)
+        silhouette_avg = metrics.silhouette_score(self.data, label)
+        return cluster_center, label, DBI, silhouette_avg
+
+    def select_n_kmeans(self, ncluster_min, ncluster_max):
         start_time = time.time()
-        self.results = Parallel(n_jobs=self.n_cores)(delayed(self.cluster)(n_cluster) for n_cluster in range(ncluster_min, ncluster_max))
+        self.results = Parallel(n_jobs=self.n_cores)(delayed(self.cluster_kmeans)(n_cluster) for n_cluster in range(ncluster_min, ncluster_max))
 
         # extract result
         for i in range(ncluster_min, ncluster_max):
             self.cluster_centers[i], self.labels[i], self.DBIs[i], self.SIs[i] = self.results[i-ncluster_min]
 
         end_time = time.time()
-        print(f'Time consumed: {(end_time-start_time)/3600} h')
+        print(f'kmeans Time consumed: {(end_time-start_time)/3600} h')
+
+        return self.cluster_centers, self.labels, self.DBIs, self.SIs
+
+    def select_n_kspectral(self, ncluster_min, ncluster_max):
+        start_time = time.time()
+
+        cluster_center, label, DBI, silhouette_avg = self.cluster_kspectral(3)
+
+        self.results = Parallel(n_jobs=self.n_cores)(delayed(self.cluster_kspectral)(n_cluster) for n_cluster in range(ncluster_min, ncluster_max))
+
+        # extract result
+        for i in range(ncluster_min, ncluster_max):
+            self.cluster_centers[i], self.labels[i], self.DBIs[i], self.SIs[i] = self.results[i-ncluster_min]
+
+        end_time = time.time()
+        print(f'kspectral Time consumed: {(end_time-start_time)/3600} h')
 
         return self.cluster_centers, self.labels, self.DBIs, self.SIs
