@@ -13,6 +13,8 @@ This repository hosts LBNL's EULP Python package source code, and a domonstratio
 │
 ├── EULP
 │   ├── __init__.py
+│   ├── allUtility
+│   ├── validation
 │   ├── LP_metrics.py
 │   └── LP_explorations.py
 │
@@ -48,6 +50,10 @@ This repository hosts LBNL's EULP Python package source code, and a domonstratio
     * ``LoadProfileExplorations.time_frequenc_plot``: Generates a figure with both time-series line plot and frequency-domain spectrums
 
 + ``LP_clustering.py`` module contains a class with methods to cluster load profiles (with time- and frequency- features)
+
++ ``allUtility`` contains the scripts to analyze the data from 8 utilities: compare different seasons, different utilities, and extract the distribution from all utilities
+
++ ``validation`` contains the scripts to compare the AMI data with the assumption used in ComStock
 
 
 ``example`` contains:
