@@ -1,36 +1,92 @@
 # EULP
-This repo stores the script to analyze EULP from NREL's dataset
+This repository hosts LBNL's EULP Python package source code, and a domonstration of using the package.
 
 ## Structure
 
-``data_example`` contains data example, NREL team needs to reformat the data as the data examples
-1. each csv file is a whole year smart meter data for a building
-2. columns: "Datetime" and "value"
-3. rows: 1 or 2 years data, at 15 min interval
+```
+|
+├── LICENSE
+│
+├── README.md
+│
+├── setup.py
+│
+├── EULP
+│   ├── __init__.py
+│   ├── allUtility
+│   ├── validation
+│   ├── LP_metrics.py
+│   └── LP_explorations.py
+│
+├── example
+│   ├── data
+│   │   ├──sample_1.csv
+│   │   └──sample_2.csv
+│   ├── example_frequency_domain_workflow.ipynb
+│   └── example_time_domain_workflow.ipynb
+│
+├── results
+│   ├── LBNL_Case_1
+│   └── NREL_Case_1
+│
+└── tests
 
-``environment.yml`` dependece of the environment (Python 3.8),
-using ``conda env create -f environment.yml`` to prepare the environment
-
-``time_domain_analysis.py`` python script to be called to do the time domain analysis
-
-``frequence_domain_analysis.py`` python script to be called to do the frequence domain analysis
-
-``lib`` contains utility functions used in ``time_domain_analysis.py`` and ``frequence_domain_analysis``
-
-``result`` contains the analysis results
-
-``fig`` contains analysis plots
-
-## Functions
-
-1. time domain analysis
-    * clustering on the time domain, find the optimal number of clusters
-    * calculate the distribution of key Load Shape statistics
-2. frequency domain analysis
+```
 
 
-## Steps for analysis
+``setup.py`` includes package information and tells dependent modules we are about to install.
 
-1. Set up the virtual environment, installing the libraries specified in the ``environment.yml``
-2. Run ``time_domain_analysis.py`` and ``frequence_domain_analysis.py``, see how the functions are used in ``*_example.ipynb``
-3. Share with us the results in ``result`` folder
+``EULP`` contains the Python modules of the package
++ ``LP_metrics.py`` module contains a class with methods to calculate load profile metrics (both time-domain and frequency-domain). Key methods include:
+    * ``LoadProfileMetrics.scale``: scale the value to a range
+    * ``LoadProfileMetrics.get_load_fft``: compute the raw frequency features with a time-series input
+    * ``LoadProfileMetrics.get_fft_w_window``: get the frequency feature with a given window and year
+    * ``LoadProfileMetrics.method_name``: clustering on the time domain, find the optimal number of clusters
+    * ``LoadProfileMetrics.method_name``: calculate the distribution of key Load Shape statistics
+
++ ``LP_explorations.py`` module contains a class with methods to visualize load profiles
+    * ``LoadProfileExplorations.line_plot``: Generates a line plot for a load profile
+    * ``LoadProfileExplorations.heatmap``: Generates an annual heat map of a load profile
+    * ``LoadProfileExplorations.time_frequenc_plot``: Generates a figure with both time-series line plot and frequency-domain spectrums
+
++ ``LP_clustering.py`` module contains a class with methods to cluster load profiles (with time- and frequency- features)
+
++ ``allUtility`` contains the scripts to analyze the data from 8 utilities: compare different seasons, different utilities, and extract the distribution from all utilities
+
++ ``validation`` contains the scripts to compare the AMI data with the assumption used in ComStock
+
+
+``example`` contains:
+1. example building [electric load profile](example/data/sample.csv)
+    * each csv file is a whole year smart meter data for a building
+    * columns: "Datetime" and "Value"
+    * rows: 1 or 2 years data, at 15 min interval
+2. example jupyter notebooks
+    * [``example_time_domain_workflow.ipynb``](example/example_time_domain_workflow.ipynb) demonstrates the capability of time domain analysis of this package
+    * [``example_frequency_domain_workflow.ipynb``](example/example_frequency_domain_workflow.ipynb) demonstrates the capability of frequency domain analysis of this package
+    * ``time_domain_analysis.py`` demonstrates xyz
+
+``result`` contains the analysis results. For the ease of sharing, please organize the results in sub-directory, for instance:
++ ``LBNL_Case_1``
++ ``NREL_Case_Name``
+
+``tests`` contains test scripts (TBD)
+
+
+## Installation
+We recommend installing the package in a virtual environment. Instructions about creating virtual Python environments:
++ With [Anaconda](https://uoa-eresearch.github.io/eresearch-cookbook/recipe/2014/11/20/conda/)
++ With [venv](https://docs.python.org/3/library/venv.html)
+
+Once the virtual envrionment is installed, change directory to the root path of this repository, then run ```pip install .``` FUTURE: run ```pip install EULP```
+
+
+## Use
+See example workflow in the ``example`` part
+
+
+## TODO
+1. Wrap up the code
+2. Test with examples
+3. Add license aggreement
+4. Package the code and release to PyPi
